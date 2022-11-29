@@ -1,75 +1,90 @@
-#made by The Collective
-import numpy as np
-from PIL import Image,UnidentifiedImageError
-
-def cipher(data,key):
-    result=""
-    for i in range(len(data)):
-        char=data[i]
-        if (char.isupper()): 
-            result += chr((ord(char) + key-65) % 26 + 65) 
-  
-        # Encrypt lowercase characters 
-        else: 
-            result += chr((ord(char) + key - 97) % 26 + 97) 
-  
-    return result 
-    
-def convert(ASCII):
-    binary=[]
-    for i in ASCII:
-        x=ord(i)
-        y='0'+bin(x)[2:]
-        binary.append(y)
-    return binary   
-    
-def modifier(pixel,asci):
-    data=convert(asci)
-    l=len(data)
-    im=iter(pixel)
-    for i in range(l):
-        pixel = [value for value in im.__next__()[:3] +im.__next__()[:3] +im.__next__()[:3]]
-        for j in range(0, 8):
-            if (data[i][j] == '0' and pixel[j]% 2 != 0):
-                pixel[j]=pixel[j]-1
+from PIL import Image
  
-            elif (data[i][j] == '1' and pixel[j] % 2 == 0):
-                if(pixel[j] != 0):
-                    pixel[j]=pixel[j]-1
-                else:
-                    pixel[j]=pixel[j]-1
+def ceasarcipher(text,flag):
+    print("Enter the key: ")
+    key = int(input())
+    if flag == 1:
+        key = -key
+    result = ''
+    for i in range(len(text)):
+        char = text[i]
+        if (char.isupper()):
+            result += chr((ord(char) + key-65) % 26 + 65)
+        else:
+            result += chr((ord(char) + key - 97) % 26 + 97)
+    return result
 
-        if (i == l - 1):
-            if (pixel[-1] % 2 == 0):
-                if(pixel[-1] != 0):
-                    pixel[-1] -= 1
+def cipherdecode():
+    data=decode()
+    return ceasarcipher(data,1)
+
+# Convert encoding data into 8-bit binary
+# form using ASCII value of characters
+def genData(data):
+ 
+        # list of binary codes
+        # of given data
+        newd = []
+ 
+        for i in data:
+            newd.append(format(ord(i), '08b'))
+        return newd
+ 
+# Pixels are modified according to the
+# 8-bit binary data and finally returned
+def modPix(pix, data):
+ 
+    datalist = genData(data)
+    lendata = len(datalist)
+    imdata = iter(pix)
+ 
+    for i in range(lendata):
+ 
+        # Extracting 3 pixels at a time
+        pix = [value for value in imdata.__next__()[:3] +
+                                imdata.__next__()[:3] +
+                                imdata.__next__()[:3]]
+ 
+        # Pixel value should be made
+        # odd for 1 and even for 0
+        for j in range(0, 8):
+            if (datalist[i][j] == '0' and pix[j]% 2 != 0):
+                pix[j] -= 1
+ 
+            elif (datalist[i][j] == '1' and pix[j] % 2 == 0):
+                if(pix[j] != 0):
+                    pix[j] -= 1
                 else:
-                    pixel[-1] += 1
+                    pix[j] += 1
+                # pix[j] -= 1
+ 
+        # Eighth pixel of every set tells
+        # whether to stop ot read further.
+        # 0 means keep reading; 1 means thec
+        # message is over.
+        if (i == lendata - 1):
+            if (pix[-1] % 2 == 0):
+                if(pix[-1] != 0):
+                    pix[-1] -= 1
+                else:
+                    pix[-1] += 1
  
         else:
-            if (pixel[-1] % 2 != 0):
-                pixel[-1] -= 1
+            if (pix[-1] % 2 != 0):
+                pix[-1] -= 1
  
-        pixel = tuple(pixel)
-        yield pixel[0:3]
-        yield pixel[3:6]
-        yield pixel[6:9]
-
-
-def encode():
-    img = input("Enter file name in format 'image.extension' : ")
-    image = Image.open(img, 'r')
-    k=int(input("Enter a numeric key"))
-    dataold = input("Enter data to be hidden : ")
-    data=cipher(dataold,k)
-    if (len(data) == 0):
-        raise ValueError('Data is empty')
+        pix = tuple(pix)
+        yield pix[0:3]
+        yield pix[3:6]
+        yield pix[6:9]
  
-    newimg = image.copy()
+def encode_enc(newimg, data):
     w = newimg.size[0]
     (x, y) = (0, 0)
  
-    for pixel in modifier(newimg.getdata(), data):
+    for pixel in modPix(newimg.getdata(), data):
+ 
+        # Putting modified pixels in the new image
         newimg.putpixel((x, y), pixel)
         if (x == w - 1):
             x = 0
@@ -77,59 +92,57 @@ def encode():
         else:
             x += 1
  
-    new_img_name = "enc"+img
+# Encode data into image
+def encode():
+    img = input("Enter image name(with extension) : ")
+    image = Image.open(img, 'r')
+ 
+    data1 = input("Enter data to be encoded : ")
+    data=ceasarcipher(data1)
+    if (len(data) == 0):
+        raise ValueError('Data is empty')
+ 
+    newimg = image.copy()
+    encode_enc(newimg, data)
+ 
+    new_img_name = input("Enter the name of new image(with extension) : ")
     newimg.save(new_img_name, str(new_img_name.split(".")[1].upper()))
-
-
+ 
+# Decode the data in the image
 def decode():
-
-    name = input("Enter image name: ")
-
-    try:
-        img = Image.open(name, 'r')
-    except FileNotFoundError:
-        print("File doesn't exist")
-    except UnidentifiedImageError:
-        print("File is not an image")
-    else:
-        data = list(img.getdata())
-        info = ""
-
-        for idx in range(0, len(data), 3):
-            l = data[idx] + data[idx+1] + data[idx+2]
-            code = '0b'
-
-            for i in range(8):
-                if l[i] % 2 == 0:
-                    code += '0'
-                else:
-                    code += '1'
-
-            lettercode = int(code, 2)
-            letter = chr(lettercode)
-            info += letter
-
-            if l[8] % 2 == 1:
-                break
-
-        return info
-try:
-    a = int(input("Enter your Choice:\n1. Encode\n2. Decode\n"))
-    while (a!=0):
-        try:
-            if (a == 1):
-                encode()
-
-            elif (a == 2):
-                x=decode()
-                k=int(input("Enter the key: "))
-                print("Decoded Word :  " + cipher(x,26-k))
+    img = input("Enter image name(with extension) : ")
+    image = Image.open(img, 'r')
+ 
+    data = ''
+    imgdata = iter(image.getdata())
+ 
+    while (True):
+        pixels = [value for value in imgdata.__next__()[:3] +
+                                imgdata.__next__()[:3] +
+                                imgdata.__next__()[:3]]
+ 
+        # string of binary data
+        binstr = ''
+ 
+        for i in pixels[:8]:
+            if (i % 2 == 0):
+                binstr += '0'
             else:
-                raise Exception("Enter correct input")
-            a = int(input("Please make a choice:\n""1. Encode\n2. Decode\n"))    
-        except:
-            print("error plz try again")
-            continue
-except:
-    print("error plz try again")   
-         
+                binstr += '1'
+ 
+        data += chr(int(binstr, 2))
+        if (pixels[-1] % 2 != 0):
+            return data
+ 
+# Main Function
+
+a = int(input(":: Welcome to Steganography ::\n"
+                        "1. Encode\n2. Decode\n"))
+if (a == 1):
+    encode()
+ 
+elif (a == 2):
+    final=cipherdecode()
+    print("Decoded Word :  " + final)
+else:
+    raise Exception("Enter correct input")
