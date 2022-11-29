@@ -198,7 +198,7 @@ while(True):
                                     "1. Encode\n2. Decode\n3. Exit\n"))
             if (a == 1):
                 encode()
-            
+            #hmmmmmm
             elif (a == 2):
                 final=cipherdecode()
                 print("Decoded Word :  " + final)
