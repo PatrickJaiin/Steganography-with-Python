@@ -1,7 +1,7 @@
 from PIL import Image
-
+import hashlib
 def ceasarcipher(text,flag):
-    print("Enter the key: ")
+    print("Enter the key2 (numeric): ")
     key = int(input())
     if flag == 1:
         key = -key
@@ -19,12 +19,51 @@ def ceasarcipher(text,flag):
 def ceasardecode(text):
     return ceasarcipher(text,1)
 
+def vignerecipher(text,key):
+    cipher_text = []
+    for i in range(len(text)):
+        x = (ord(text[i]) +
+             ord(key[i])) % 26
+        x += ord('A')
+        cipher_text.append(chr(x))
+    return("" . join(cipher_text))
+
+def vignerecipherdecode(text,key):
+    cipher_text = []
+    for i in range(len(text)):
+        x = (ord(text[i]) -
+             ord(key[i])) % 26
+        x += ord('A')
+        cipher_text.append(chr(x))
+    return("" . join(cipher_text))
+
+def generateKey(string, key):
+    key = list(key)
+    if len(string) == len(key):
+        return(key)
+    else:
+        for i in range(len(string) -
+                       len(key)):
+            key.append(key[i % len(key)])
+    return("" . join(key))
+
 def cipher(text):
+    print(text)
     text=ceasarcipher(text,0)
+    key = input("Enter the key1 (string): ")
+    print("key1 is: ",key)
+    key=generateKey(text,key)
+    print("key1 is: ",key)
+    text=vignerecipher(text,key)
     return text
 
 def cipherdecode():
     text=decode()
+    print(text)
+    key = input("Enter the key1 (string): ")
+    key=generateKey(text,key)
+    print("key1 is: ",key)
+    text=vignerecipherdecode(text,key)
     text=ceasardecode(text)
     return text
 # Convert encoding data into 8-bit binary
@@ -107,6 +146,7 @@ def encode():
     image = Image.open(img, 'r')
  
     data1 = input("Enter data to be encoded : ")
+    data1=data1.upper()
     data=cipher(data1)
     if (len(data) == 0):
         raise ValueError('Data is empty')
@@ -142,16 +182,27 @@ def decode():
         data += chr(int(binstr, 2))
         if (pixels[-1] % 2 != 0):
             return data
- 
+while(True):
 # Main Function
-
-a = int(input(":: Welcome to Steganography ::\n"
-                        "1. Encode\n2. Decode\n"))
-if (a == 1):
-    encode()
- 
-elif (a == 2):
-    final=cipherdecode()
-    print("Decoded Word :  " + final)
-else:
-    raise Exception("Enter correct input")
+    hashes=['d55c6310ac3ee125e40c674b5482c5cf88b9b3a6960aea31b53e9186d19b83c9','ecb4f54ba57ea81da68039fcce3e5d9a884aba18099724ddded9e431a141c16e']
+    print("Hi, please login to continue:")
+    print("Enter username:")
+    username=input()
+    if username=="admin":
+        print("Enter password:")
+        password=input()
+        hashed_text=hashlib.sha256(password.encode('utf-8')).hexdigest()
+        print("Hashed password is:",hashed_text)
+        if hashed_text in hashes:
+            a = int(input(":: Welcome to Steganography ::\n"
+                                    "1. Encode\n2. Decode\n3. Exit\n"))
+            if (a == 1):
+                encode()
+            
+            elif (a == 2):
+                final=cipherdecode()
+                print("Decoded Word :  " + final)
+            elif (a==0):
+                break
+            else:
+                raise Exception("Enter correct input")
