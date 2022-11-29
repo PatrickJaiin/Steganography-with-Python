@@ -1,5 +1,5 @@
 from PIL import Image
- 
+
 def ceasarcipher(text,flag):
     print("Enter the key: ")
     key = int(input())
@@ -10,14 +10,23 @@ def ceasarcipher(text,flag):
         char = text[i]
         if (char.isupper()):
             result += chr((ord(char) + key-65) % 26 + 65)
+        elif (char.isnumeric()):
+            result += chr((ord(char) + key-48) % 10 + 48)
         else:
             result += chr((ord(char) + key - 97) % 26 + 97)
     return result
 
-def cipherdecode():
-    data=decode()
-    return ceasarcipher(data,1)
+def ceasardecode(text):
+    return ceasarcipher(text,1)
 
+def cipher(text):
+    text=ceasarcipher(text,0)
+    return text
+
+def cipherdecode():
+    text=decode()
+    text=ceasardecode(text)
+    return text
 # Convert encoding data into 8-bit binary
 # form using ASCII value of characters
 def genData(data):
@@ -98,7 +107,7 @@ def encode():
     image = Image.open(img, 'r')
  
     data1 = input("Enter data to be encoded : ")
-    data=ceasarcipher(data1)
+    data=cipher(data1)
     if (len(data) == 0):
         raise ValueError('Data is empty')
  
