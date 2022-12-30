@@ -3,7 +3,7 @@ import hashlib
 def ceasarcipher(text,flag):
     print("Enter the key2 (numeric): ")
     key = int(input())
-    if flag == 1: 
+    if flag == 1:
         key = -key
     result = ''
     for i in range(len(text)):
